@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>tulpa</title>
+    <meta name="description" content="A managed AI that runs your social account — content, graphics, and replies, on autopilot." />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2315130d'/%3E%3Ccircle cx='20' cy='12' r='8' fill='%238a7e63'/%3E%3Ccircle cx='13' cy='20' r='8' fill='%23f4f0e7'/%3E%3C/svg%3E" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <script>
+      // gate reveal-on-scroll behind .js, and only when motion is welcome (avoids hiding content otherwise)
+      if (!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches))
+        document.documentElement.classList.add("js");
+    </script>
+    <style>
+      :root {
+        --paper: #f4f0e7;
+        --panel: #efe9dc;
+        --ink: #15130d;
+        --dim: #6a6354;
+        --faint: #9a9182;
+        --rule: #15130d;
+        --hair: #d6cdba;
+        --green: #8a7e63;
+        --red: #b34430;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html { scroll-behavior: smooth; }
+      body {
+        background: var(--paper); color: var(--ink);
+        font-family: "Space Grotesk", system-ui, sans-serif;
+        line-height: 1.5; -webkit-font-smoothing: antialiased;
+      }
+      .mono { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+      a { color: inherit; text-decoration: none; }
+      ::selection { background: var(--ink); color: var(--paper); }
+      .wrap { max-width: 1000px; margin: 0 auto; padding: 0 28px; }
+      .rule-t { border-top: 1.5px solid var(--rule); }
+
+      /* ticker bar */
+      .ticker {
+        font-family: "IBM Plex Mono", monospace; font-size: 12.5px; letter-spacing: 0.02em;
+        border-bottom: 1.5px solid var(--rule); text-transform: uppercase;
+      }
+      .ticker .wrap { display: flex; justify-content: space-between; height: 42px; align-items: center; }
+      .ticker a { color: var(--dim); }
+      .ticker a:hover { color: var(--ink); }
+      .ticker .dot { color: var(--green); }
+
+      /* hero */
+      .hero { padding: 72px 0 0; }
+      .kicker { font-family: "IBM Plex Mono", monospace; font-size: 13px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 24px; }
+      h1 { font-size: clamp(38px, 6.5vw, 80px); line-height: 0.95; letter-spacing: -0.04em; font-weight: 600; }
+      h1 .o { color: var(--faint); }
+      .sub { font-size: clamp(18px, 2.4vw, 23px); color: var(--dim); max-width: 30ch; margin: 28px 0 32px; line-height: 1.35; }
+      .cta { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+      .btn { font-family: "IBM Plex Mono", monospace; font-size: 14px; padding: 13px 22px; border: 1.5px solid var(--rule); text-transform: uppercase; letter-spacing: 0.03em; transition: all 0.12s; }
+      .btn.solid { background: var(--ink); color: var(--paper); }
+      .btn.solid:hover { background: var(--green); border-color: var(--green); }
+      .btn.line:hover { background: var(--ink); color: var(--paper); }
+
+      /* stat strip */
+      .stats { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 72px; border-top: 1.5px solid var(--rule); border-bottom: 1.5px solid var(--rule); }
+      .stat { padding: 22px 0; border-right: 1px solid var(--hair); }
+      .stat:last-child { border-right: 0; }
+      .stat .n { font-family: "IBM Plex Mono", monospace; font-size: clamp(26px, 3.4vw, 38px); font-weight: 500; letter-spacing: -0.02em; }
+      .stat .n.g { color: var(--green); }
+      .stat .l { font-family: "IBM Plex Mono", monospace; font-size: 12px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 4px; }
+
+      /* hero layout + example-post artifact */
+      .hero-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 56px; align-items: center; }
+      .hero-art { border: 1.5px solid var(--rule); background: var(--panel); box-shadow: 8px 8px 0 rgba(21,19,13,0.07); }
+      .hero-art .top { display: flex; justify-content: space-between; align-items: center; padding: 11px 16px; border-bottom: 1px solid var(--hair); font-family: "IBM Plex Mono", monospace; font-size: 11.5px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.05em; }
+      .hero-art .top .live { color: var(--green); }
+      .hero-art .post { padding: 20px 18px 18px; }
+      .hero-art .who { font-size: 15px; font-weight: 600; }
+      .hero-art .who span { color: var(--faint); font-weight: 400; font-family: "IBM Plex Mono", monospace; font-size: 12px; }
+      .hero-art .txt { margin-top: 12px; font-size: 19px; line-height: 1.42; letter-spacing: -0.01em; }
+      .hero-art .foot { padding: 12px 18px; border-top: 1px dashed var(--hair); font-family: "IBM Plex Mono", monospace; font-size: 11.5px; color: var(--faint); text-transform: uppercase; letter-spacing: 0.04em; }
+      @media (max-width: 760px) { .hero-grid { grid-template-columns: 1fr; gap: 40px; } }
+
+      /* generic block */
+      section { padding: 84px 0; }
+      .lab { font-family: "IBM Plex Mono", monospace; font-size: 13px; color: var(--green); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 28px; display: flex; gap: 10px; align-items: baseline; }
+      .lab b { color: var(--faint); font-weight: 400; }
+      h2 { font-size: clamp(30px, 5vw, 52px); letter-spacing: -0.03em; font-weight: 600; line-height: 1.02; max-width: 18ch; }
+      .body { font-size: 19px; color: var(--dim); max-width: 56ch; margin-top: 24px; line-height: 1.5; }
+      .body strong { color: var(--ink); font-weight: 500; }
+
+      /* comparison table */
+      table { width: 100%; border-collapse: collapse; margin-top: 44px; font-size: 17px; }
+      th, td { text-align: left; padding: 18px 16px; border-bottom: 1px solid var(--hair); }
+      thead th { font-family: "IBM Plex Mono", monospace; font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--dim); border-bottom: 1.5px solid var(--rule); }
+      thead th:last-child { color: var(--green); }
+      td:first-child { color: var(--dim); width: 40%; }
+      td.them { color: var(--red); }
+      td.us { color: var(--green); font-weight: 600; }
+
+      /* how */
+      .steps { margin-top: 40px; border-top: 1.5px solid var(--rule); }
+      .step { display: grid; grid-template-columns: 64px 180px 1fr; gap: 20px; padding: 22px 0; border-bottom: 1px solid var(--hair); align-items: baseline; }
+      .step .num { font-family: "IBM Plex Mono", monospace; color: var(--faint); font-size: 14px; }
+      .step .nm { font-size: 21px; font-weight: 600; letter-spacing: -0.01em; }
+      .step .ds { color: var(--dim); font-size: 16px; }
+
+      /* code */
+      .code { margin-top: 36px; border: 1.5px solid var(--rule); background: var(--panel); font-family: "IBM Plex Mono", monospace; font-size: 14px; }
+      .code .h { border-bottom: 1px solid var(--hair); padding: 10px 16px; font-size: 12px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.04em; }
+      .code pre { padding: 18px 16px; overflow-x: auto; line-height: 1.85; color: var(--dim); }
+      .code .st { color: var(--red); }
+      .code .v { color: var(--green); }
+
+      /* specifics */
+      .spec { margin-top: 36px; border-top: 1.5px solid var(--rule); }
+      .spec li { list-style: none; display: grid; grid-template-columns: 220px 1fr; gap: 20px; padding: 18px 0; border-bottom: 1px solid var(--hair); }
+      .spec .k { font-weight: 600; font-size: 18px; }
+      .spec .v { color: var(--dim); font-size: 16px; }
+
+      /* waitlist */
+      .wl { background: var(--ink); color: var(--paper); }
+      .wl h2 { color: var(--paper); }
+      .wl .body { color: #b8b1a1; }
+      .wl form { display: flex; gap: 12px; margin-top: 32px; flex-wrap: wrap; }
+      .wl input { background: transparent; border: 1.5px solid #4a463c; color: var(--paper); font-family: "IBM Plex Mono", monospace; font-size: 15px; padding: 13px 16px; width: 320px; max-width: 100%; }
+      .wl input:focus { outline: none; border-color: var(--green); }
+      .wl button { background: var(--green); color: var(--paper); border: 0; font-family: "IBM Plex Mono", monospace; font-size: 14px; text-transform: uppercase; letter-spacing: 0.03em; padding: 13px 24px; cursor: pointer; }
+      .wl .ok { color: var(--green); font-family: "IBM Plex Mono", monospace; font-size: 14px; margin-top: 14px; min-height: 18px; }
+
+      footer { border-top: 1.5px solid var(--rule); }
+      footer .wrap { display: flex; justify-content: space-between; padding: 28px 28px; font-family: "IBM Plex Mono", monospace; font-size: 12.5px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.03em; flex-wrap: wrap; gap: 12px; }
+      footer a:hover { color: var(--ink); }
+
+      @media (max-width: 720px) {
+        .stats { grid-template-columns: repeat(2, 1fr); }
+        .stat:nth-child(2) { border-right: 0; }
+        .step { grid-template-columns: 40px 1fr; }
+        .step .ds { grid-column: 1 / -1; }
+        .spec li { grid-template-columns: 1fr; gap: 4px; }
+      }
+
+      /* ---------- polish pass ---------- */
+      html { -webkit-text-size-adjust: 100%; }
+
+      /* subtle film grain — editorial richness, barely there */
+      body::after {
+        content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 9999; opacity: 0.038;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      }
+
+      /* unified, gentle transitions + accessible focus */
+      a, .btn, button, .hero-art, tbody tr { transition: color .15s ease, background-color .15s ease, border-color .15s ease, transform .18s ease, box-shadow .2s ease, filter .15s ease; }
+      a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; border-radius: 1px; }
+
+      /* animated underline on text links */
+      .ticker a, footer a { position: relative; }
+      .ticker a::after, footer a::after { content: ""; position: absolute; left: 0; right: 0; bottom: -2px; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: left; transition: transform .22s ease; }
+      .ticker a:hover::after, footer a:hover::after { transform: scaleX(1); }
+
+      /* typographic refinement */
+      h1, h2, .hero-art .txt { text-wrap: balance; }
+      .sub, .body, p, .step .ds, .spec .v { text-wrap: pretty; }
+      h1 { letter-spacing: -0.045em; }
+      .stat .n, table td, .hero-art .who span, .code { font-variant-numeric: tabular-nums; }
+
+      /* tactile cards, rows, buttons */
+      .hero-art:hover { transform: translate(-2px, -2px); box-shadow: 11px 11px 0 rgba(21,19,13,0.10); }
+      tbody tr:hover { background: rgba(28,124,74,0.05); }
+      .btn.solid:hover, .btn.line:hover { transform: translateY(-1px); }
+      .btn:active, .wl button:active { transform: translateY(0); }
+      .wl button:hover { filter: brightness(1.07); transform: translateY(-1px); }
+
+      /* gentle entrance on load — gives the page character (fires once, never on scroll) */
+      @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+      .hero-text > *, .hero-art { animation: rise .6s cubic-bezier(.2,.7,.2,1) backwards; }
+      .hero-text > *:nth-child(2) { animation-delay: .07s; }
+      .hero-text > *:nth-child(3) { animation-delay: .14s; }
+      .hero-text > *:nth-child(4) { animation-delay: .21s; }
+      .hero-art { animation-delay: .16s; }
+
+      /* discoverable inline links + comfortable anchor offsets */
+      .body a, .hero-art .txt a { color: var(--ink); border-bottom: 1px solid var(--green); padding-bottom: 1px; }
+      .body a:hover { color: var(--green); }
+      [id] { scroll-margin-top: 28px; }
+
+      /* per-section reveal — a horizontal wipe (distinct from the hero's vertical rise) */
+      html.js section > .wrap > *,
+      html.js .stats > .stat {
+        opacity: 0; clip-path: inset(0 100% 0 0);
+        transition: opacity .5s ease, clip-path .75s cubic-bezier(.2,.7,.2,1);
+      }
+      html.js section.in > .wrap > *,
+      html.js .stats.in > .stat { opacity: 1; clip-path: inset(0 0 0 0); }
+      html.js section > .wrap > *:nth-child(2),
+      html.js .stats > .stat:nth-child(2) { transition-delay: .06s; }
+      html.js section > .wrap > *:nth-child(3),
+      html.js .stats > .stat:nth-child(3) { transition-delay: .12s; }
+      html.js section > .wrap > *:nth-child(4),
+      html.js .stats > .stat:nth-child(4) { transition-delay: .18s; }
+      html.js section > .wrap > *:nth-child(5) { transition-delay: .24s; }
+
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { animation: none !important; transition: none !important; }
+        html { scroll-behavior: auto; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="ticker">
+      <div class="wrap">
+        <div><svg viewBox="0 0 32 32" style="width:17px;height:17px;vertical-align:-3px;margin-right:6px" aria-hidden="true"><circle cx="20" cy="12" r="8" fill="#8a7e63"/><circle cx="13" cy="20" r="8" fill="#15130d"/></svg>tulpa — autonomous social agent</div>
+        <div><a href="#waitlist">early access</a></div>
+      </div>
+    </div>
+
+    <header class="hero">
+      <div class="wrap">
+        <div class="hero-grid">
+          <div class="hero-text">
+            <div class="kicker">managed · we run it for you · early access</div>
+            <h1>It runs the account.<br /><span class="o">You don't.</span></h1>
+            <p class="sub">A managed AI that learns your voice, makes the content and graphics, and posts — on its own. You approve the spicy stuff.</p>
+            <div class="cta">
+              <a class="btn solid" href="#waitlist">Get early access</a>
+            </div>
+          </div>
+          <div class="hero-art">
+            <div class="top"><span>x.com / @goblin</span><span class="live">● auto</span></div>
+            <div class="post">
+              <div class="who">goblin <span>@goblin · now</span></div>
+              <div class="txt">gm. another block finalized in 400ms. we're so back.</div>
+            </div>
+            <div class="foot">drafted + posted by tulpa — 0 humans involved</div>
+          </div>
+        </div>
+        <div class="stats">
+          <div class="stat"><div class="n">1</div><div class="l">persona to set</div></div>
+          <div class="stat"><div class="n g">0</div><div class="l">posts you write</div></div>
+          <div class="stat"><div class="n">24/7</div><div class="l">it stays running</div></div>
+          <div class="stat"><div class="n">$0.05</div><div class="l">per agent post</div></div>
+        </div>
+      </div>
+    </header>
+
+    <section>
+      <div class="wrap">
+        <div class="lab">01 <b>/ the premise</b></div>
+        <h2>Scheduling was never the hard part.</h2>
+        <p class="body">
+          Buffer, Postiz, Typefully — they all hand you an empty queue. That's still <strong>you</strong>,
+          writing posts at 11pm. tulpa is the layer above the scheduler: the part that decides what to say,
+          and says it.
+        </p>
+        <table>
+          <thead>
+            <tr><th></th><th>schedulers</th><th>tulpa</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>who writes the post</td><td class="them">you</td><td class="us">the agent</td></tr>
+            <tr><td>who picks the timing</td><td class="them">you</td><td class="us">the agent</td></tr>
+            <tr><td>runs while you sleep</td><td class="them">no</td><td class="us">yes</td></tr>
+            <tr><td>other agents can pay to post</td><td class="them">no</td><td class="us">yes — via x402</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="rule-t">
+      <div class="wrap">
+        <div class="lab">02 <b>/ how it works</b></div>
+        <h2>Five steps. No babysitting.</h2>
+        <div class="steps">
+          <div class="step"><div class="num">[1]</div><div class="nm">persona</div><div class="ds">Who the account is — handle, voice, topics, rules.</div></div>
+          <div class="step"><div class="num">[2]</div><div class="nm">brain</div><div class="ds">An AI writes each post in voice, avoiding what it just said. No key? A fallback runs offline.</div></div>
+          <div class="step"><div class="num">[3]</div><div class="nm">scheduler</div><div class="ds">Decides when — and whether — to post. It won't spam.</div></div>
+          <div class="step"><div class="num">[4]</div><div class="nm">platform</div><div class="ds">Publishes to X today. Adding one is two methods.</div></div>
+          <div class="step"><div class="num">[5]</div><div class="nm">posted</div><div class="ds">It keeps the account alive while you're asleep.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="rule-t">
+      <div class="wrap">
+        <div class="lab">03 <b>/ the business</b></div>
+        <h2>The customer is an agent.</h2>
+        <p class="body">
+          The last social tool that mattered grew when <strong>agents</strong>, not humans, started paying for it.
+          tulpa is wired for that: run it as a server and other agents pay per post, settled onchain with
+          <a href="https://www.x402.org">x402</a>.
+        </p>
+        <div class="code">
+          <div class="h">POST /api/post — no payment attached</div>
+          <pre><span class="st">402 Payment Required</span>
+{
+  network: <span class="v">"solana"</span>,
+  asset:   <span class="v">"USDC"</span>,
+  amount:  <span class="v">"0.05"</span>,
+  payTo:   <span class="v">"So1ana…"</span>
+}</pre>
+        </div>
+      </div>
+    </section>
+
+    <section class="rule-t">
+      <div class="wrap">
+        <div class="lab">04 <b>/ specifics</b></div>
+        <h2>What you actually get.</h2>
+        <ul class="spec">
+          <li><div class="k">Fully managed</div><div class="v">We hold the keys and the API bill. You just approve.</div></li>
+          <li><div class="k">Content + graphics</div><div class="v">On-brand posts and visuals, not just text.</div></li>
+          <li><div class="k">Pluggable platforms</div><div class="v">X today. Write an adapter in a few lines.</div></li>
+          <li><div class="k">Agent-native</div><div class="v">A terse CLI your own agent can drive without burning tokens.</div></li>
+          <li><div class="k">Paid endpoints</div><div class="v">Let other agents pay per post via x402.</div></li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="waitlist" class="wl">
+      <div class="wrap">
+        <div class="lab" style="color: var(--green)">05 <b style="color:#7a7567">/ managed</b></div>
+        <h2>Don't want to run it yourself?</h2>
+        <p class="body">Leave an email. I'll ping you when the hosted version is live.</p>
+        <form onsubmit="event.preventDefault(); this.querySelector('input').value=''; document.getElementById('ok').textContent='✓ on the list. talk soon.';">
+          <input type="email" placeholder="you@domain.com" aria-label="Email address" required />
+          <button type="submit">Notify me</button>
+        </form>
+        <div class="ok" id="ok"></div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="wrap">
+        <div>tulpa — your account, run for you</div>
+        <div>© 2026 tulpalabs · <a href="#waitlist">early access</a></div>
+      </div>
+    </footer>
+    <script>
+      // reveal each section element as it scrolls into view (once)
+      (function () {
+        // observe whole sections (reliable) — children reveal via CSS stagger
+        var secs = document.querySelectorAll("section, .stats");
+        if (!("IntersectionObserver" in window) || !document.documentElement.classList.contains("js")) {
+          secs.forEach(function (s) { s.classList.add("in"); });
+          return;
+        }
+        var io = new IntersectionObserver(
+          function (entries) {
+            entries.forEach(function (e) {
+              if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
+            });
+          },
+          { rootMargin: "0px 0px -5% 0px", threshold: 0.05 },
+        );
+        secs.forEach(function (s) { io.observe(s); });
+      })();
+    </script>
+  </body>
+</html>

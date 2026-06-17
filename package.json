@@ -1,0 +1,11 @@
+{
+  "name": "tulpa-site",
+  "version": "1.0.0",
+  "description": "Tulpa — marketing site.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node serve-site.mjs"
+  },
+  "engines": { "node": ">=20" }
+}
